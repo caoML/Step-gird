@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>踩白格</title>
+  <style>
+    *{
+      margin:0;
+      padding:0;
+    }
+    #score{
+      font-size: 20px;
+      width:300px;
+      text-align: center;
+      margin:10px auto;
+    }
+    #score i{
+      color:red;
+      font-size: 25px;
+    }
+    #bg{
+      position: relative;
+      background: url(./img/bg.png);
+      margin:20px auto;
+      width:300px;
+      height:600px;
+      border:1px solid green;
+      overflow: hidden;
+    }
+    .squace{
+      width:75px;
+      height:100px;
+      float:left;
+    }
+    .squaceBlack{
+      width:75px;
+      height:100px;
+      float:left;
+      background-color: black;
+    }
+    .before,.after{
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="score">得分:<i></i></div>
+  <div id="bg">
+    <div id="before" style="position:absolute;top:0">
+    </div>
+  </div>
+  <script>
+    function White(){
+      this.root=document.getElementById("bg");
+      this.count=0; //分数
+      this.loc=600;  //落到最后未点击时loc为0,游戏结束
+      this.Arr=[]; //黑块的数组
+      this.timer;  //时间记录器
+      this.ord; //定义转换的id名字
+      this.init();
+
+    }
+    White.prototype={
+      init:function(){
+        var self=this;
+        self.drawBoard();
+        //需要使用匿名函数,使fall的对象为White对象,方便fall函数调用White中的其他函数
+        self.timer=setInterval(function(){self.fall()},50);
+      },
+      fall:function(){
+        var self=this;
+        var before=document.getElementById("before");
+        var bNum=parseInt(before.style.top);
+        //console.log(self.root);
+        if(bNum==595){
+          self.root.removeChild(before);
+          self.drawBoard();
+        }
+        bNum+=5;
+        before.style.top=bNum+"px";
+        var after=document.getElementById("after");
+        var aNum=parseInt(after.style.top);
+        if(aNum==595){
+          self.root.removeChild(after);
+          self.drawBoard();
+        }
+        aNum+=5;
+        after.style.top=aNum+"px";
+        self.loc-=5;
+        if(self.loc==0){
+          clearTimeout(self.timer);
+          alert("你的得分："+self.count+"分");
+    			return;
+        }
+      },
+      //交替产生不同id的div
+      order:function(){
+        if(this.ord=="after"){
+          this.ord="before";
+        }
+        else{
+          this.ord="after";
+        }
+        return this.ord;
+      },
+      //判断点击是否正确
+      judge:function(target){
+        var self=this;
+        var num=target.id.substr(3);
+        if(num!=self.Arr.pop()){
+          clearTimeout(self.timer);
+          alert("你的得分："+self.count+"分");
+    			return;
+        }
+        else{
+          self.loc+=100;
+    			target.style.backgroundColor="silver";
+    			self.count+=1;
+          var score=document.getElementById("score").getElementsByTagName("i")[0];
+          score.innerText=self.count;
+          if(self.count%15==0){
+            //产生更快的时间
+            clearTimeout(self.timer);
+            var newtimer=50-self.count/15*5;
+            self.timer=setInterval(function(){self.fall(self)},newtimer);
+          }
+        }
+      },
+      drawBoard:function(){
+        var self=this;
+        this.Arr=this.getBlack().concat(this.Arr);//concat()函数必须使用,使产生的黑格加入
+        //到对象的数组中,随时保存
+        var board=document.createElement("div");
+        board.setAttribute("id",this.order());
+        board.style.position="absolute";
+        board.style.top="-600px";
+        for(var i=0;i<24;i++){
+          var d=document.createElement("div");
+          d.setAttribute("id","ele"+i);
+          if(this.Arr.indexOf(i)>-1){
+            d.setAttribute("class","squaceBlack");
+          }
+          else{
+            d.setAttribute("class","squace");
+          }
+          //需要使用匿名函数,若不使用匿名函数,judge函数中的this指向的d
+          d.addEventListener("click",function(event){self.judge(event.target)},false);
+          board.appendChild(d);
+        }
+        this.root.appendChild(board);
+      },
+      //随机产生小黑快
+      getBlack:function(){
+        var arr=[];
+        for(var i=0;i<6;i++)
+        {
+          var ran=Math.floor(Math.random()*4)+i*4;
+          arr.push(ran);
+        }
+        return arr;
+      }
+    }
+    window.onload=function(){
+      var me=new White();
+    }
+  </script>
+</body>
+</html>
