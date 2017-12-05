@@ -10,6 +10,10 @@
       margin:0;
       padding:0;
     }
+    .everyBlank{
+      position:absolute;
+      background: url(bg.png);
+    }
     #score{
       font-size: 20px;
       width:300px;
@@ -22,7 +26,6 @@
     }
     #bg{
       position: relative;
-      background: url(./img/bg.png);
       margin:20px auto;
       width:300px;
       height:600px;
@@ -40,7 +43,13 @@
       float:left;
       background-color: black;
     }
-    .before,.after{
+    #before{
+      overflow: hidden;
+      width:300px;
+      height:600px;
+      background: url(bg.png);
+    }
+    #afterr{
       overflow: hidden;
     }
   </style>
@@ -80,14 +89,14 @@
         }
         bNum+=5;
         before.style.top=bNum+"px";
-        var after=document.getElementById("after");
-        var aNum=parseInt(after.style.top);
+        var afterr=document.getElementById("afterr");
+        var aNum=parseInt(afterr.style.top);
         if(aNum==595){
-          self.root.removeChild(after);
+          self.root.removeChild(afterr);
           self.drawBoard();
         }
         aNum+=5;
-        after.style.top=aNum+"px";
+        afterr.style.top=aNum+"px";
         self.loc-=5;
         if(self.loc==0){
           clearTimeout(self.timer);
@@ -97,18 +106,20 @@
       },
       //交替产生不同id的div
       order:function(){
-        if(this.ord=="after"){
+        if(this.ord=="afterr"){
           this.ord="before";
         }
         else{
-          this.ord="after";
+          this.ord="afterr";
         }
         return this.ord;
       },
       //判断点击是否正确
       judge:function(target){
+        //console.log(target);
         var self=this;
-        var num=target.id.substr(3);
+        var num=target.id.substr(6);
+        //console.log(self.Arr.top());
         if(num!=self.Arr.pop()){
           clearTimeout(self.timer);
           alert("你的得分："+self.count+"分");
@@ -130,22 +141,24 @@
       },
       drawBoard:function(){
         var self=this;
-        this.Arr=this.getBlack().concat(this.Arr);//concat()函数必须使用,使产生的黑格加入
+        var rArr=self.getBlack();
+        self.Arr=rArr.concat(self.Arr);//concat()函数必须使用,使产生的黑格加入
         //到对象的数组中,随时保存
         var board=document.createElement("div");
         board.setAttribute("id",this.order());
+        var ppp=board.getAttribute("id");
         board.style.position="absolute";
+        board.setAttribute("class","everyBlank");
         board.style.top="-600px";
         for(var i=0;i<24;i++){
           var d=document.createElement("div");
-          d.setAttribute("id","ele"+i);
-          if(this.Arr.indexOf(i)>-1){
+          d.setAttribute("id",ppp+i);
+          if(rArr.indexOf(i)>-1){
             d.setAttribute("class","squaceBlack");
           }
           else{
             d.setAttribute("class","squace");
           }
-          //需要使用匿名函数,若不使用匿名函数,judge函数中的this指向的d
           d.addEventListener("click",function(event){self.judge(event.target)},false);
           board.appendChild(d);
         }
